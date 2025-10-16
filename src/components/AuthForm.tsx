@@ -113,6 +113,14 @@ export default function AuthForm() {
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full mt-2"
+                onClick={() => navigate("/dashboard")}
+              >
+                Skip Login (Dev Mode)
+              </Button>
             </form>
           </TabsContent>
 
