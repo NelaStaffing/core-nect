@@ -1,4 +1,4 @@
-import { Home, Trophy, BookOpen, Calendar, Settings, LogOut } from "lucide-react";
+import { Home, Trophy, BookOpen, Calendar, Settings, LogOut, ClipboardList, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,8 @@ interface EmployeeSidebarProps {
 
 const menuItems = [
   { id: "home", label: "Home", icon: Home },
+  { id: "surveys", label: "Surveys", icon: ClipboardList },
+  { id: "feedback", label: "Feedback", icon: MessageSquare },
   { id: "achievements", label: "Achievements", icon: Trophy },
   { id: "learning", label: "Learning", icon: BookOpen },
   { id: "schedule", label: "Schedule", icon: Calendar },
@@ -30,7 +32,7 @@ export default function EmployeeSidebar({ activePage, onPageChange }: EmployeeSi
   };
 
   return (
-    <aside className="w-64 bg-secondary/30 border-l border-border p-6 flex flex-col">
+    <aside className="w-64 bg-secondary/30 border-r border-border p-6 flex flex-col">
       <div className="mb-8">
         <h2 className="text-xl font-bold text-primary">Employee Portal</h2>
         <p className="text-sm text-muted-foreground">Navigate your workspace</p>
