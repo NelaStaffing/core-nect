@@ -54,28 +54,37 @@ export default function Dashboard() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      // DEV MODE: Comment out auth check to allow viewing without login
+      // if (!session) {
+      //   navigate("/auth");
+      //   return;
+      // }
 
-      const userProfile = await getUserProfile(session.user.id);
-      const userRoles = await getUserRoles(session.user.id);
+      if (session) {
+        const userProfile = await getUserProfile(session.user.id);
+        const userRoles = await getUserRoles(session.user.id);
+        
+        setProfile(userProfile);
+        setRoles(userRoles);
+      } else {
+        // Mock data for dev mode
+        setProfile({ id: "dev", first_name: "Guest", last_name: "User", email: "guest@example.com" });
+        setRoles(["employee", "admin"]);
+      }
       
-      setProfile(userProfile);
-      setRoles(userRoles);
       setLoading(false);
     };
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      }
-    });
+    // DEV MODE: Commented out to allow viewing without login
+    // const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    //   if (!session) {
+    //     navigate("/auth");
+    //   }
+    // });
 
-    return () => subscription.unsubscribe();
+    // return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleAppClick = (app: MicroApp) => {
