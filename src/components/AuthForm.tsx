@@ -91,6 +91,7 @@ export default function AuthForm() {
                   name="email"
                   type="email"
                   placeholder="you@example.com"
+                  defaultValue="test@example.com"
                   required
                 />
               </div>
@@ -101,6 +102,7 @@ export default function AuthForm() {
                   name="password"
                   type="password"
                   placeholder="••••••••"
+                  defaultValue="password123"
                   required
                 />
               </div>
