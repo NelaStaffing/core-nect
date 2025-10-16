@@ -88,12 +88,14 @@ export default function Dashboard() {
   }, [navigate]);
 
   const handleAppClick = (app: MicroApp) => {
-    toast({
-      title: `Opening ${app.title}`,
-      description: "In a real deployment, this would navigate to the micro app.",
-    });
-    // In production, you would navigate to the actual micro app URL
-    // window.location.href = app.url;
+    if (app.id === "employee") {
+      navigate("/employee");
+    } else {
+      toast({
+        title: `Opening ${app.title}`,
+        description: "In a real deployment, this would navigate to the micro app.",
+      });
+    }
   };
 
   const getAvailableApps = () => {
