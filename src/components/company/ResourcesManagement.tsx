@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Upload, FileText, Trash2, Download, Search, Bot, CheckCircle, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Resource {
@@ -28,7 +29,10 @@ export default function ResourcesManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [aiDocQAEnabled, setAiDocQAEnabled] = useState(false);
+  const [aiTutorEnabled, setAiTutorEnabled] = useState(false);
+  const [aiCultureEnabled, setAiCultureEnabled] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmDialogType, setConfirmDialogType] = useState<'doc-qa' | 'tutor' | 'culture'>('doc-qa');
   const [exampleQA, setExampleQA] = useState<{ question: string; answer: string }[]>([]);
   const { toast } = useToast();
 
@@ -210,26 +214,79 @@ export default function ResourcesManagement() {
     );
   };
 
+  const getTrainingResources = () => {
+    return resources.filter(r => r.category === "Training");
+  };
+
+  const getCultureResources = () => {
+    return resources.filter(r => 
+      r.category === "Policy" || 
+      r.category === "Guide"
+    );
+  };
+
   const hasEnoughDocumentation = () => {
     return getDocumentationResources().length >= MIN_DOCS_REQUIRED;
   };
 
-  const generateExampleQA = () => {
-    const docs = getDocumentationResources();
-    return [
-      {
-        question: "What is our company's remote work policy?",
-        answer: `Based on ${docs.length} documentation files, I can help answer questions about company policies, procedures, and guidelines.`
-      },
-      {
-        question: "How do I submit a vacation request?",
-        answer: "I can guide you through the process using our documented procedures."
-      },
-      {
-        question: "What are the steps for onboarding new employees?",
-        answer: "I have access to SOPs and training materials to provide detailed onboarding information."
-      }
-    ];
+  const hasEnoughTraining = () => {
+    return getTrainingResources().length >= MIN_DOCS_REQUIRED;
+  };
+
+  const hasEnoughCulture = () => {
+    return getCultureResources().length >= MIN_DOCS_REQUIRED;
+  };
+
+  const generateExampleQA = (type: 'doc-qa' | 'tutor' | 'culture') => {
+    if (type === 'doc-qa') {
+      const docs = getDocumentationResources();
+      return [
+        {
+          question: "What is our company's remote work policy?",
+          answer: `Based on ${docs.length} documentation files, I can help answer questions about company policies, procedures, and guidelines.`
+        },
+        {
+          question: "How do I submit a vacation request?",
+          answer: "I can guide you through the process using our documented procedures."
+        },
+        {
+          question: "What are the steps for onboarding new employees?",
+          answer: "I have access to SOPs and training materials to provide detailed onboarding information."
+        }
+      ];
+    } else if (type === 'tutor') {
+      const training = getTrainingResources();
+      return [
+        {
+          question: "Quiz me on the sales process module",
+          answer: `Based on ${training.length} training materials, I can create interactive quizzes and provide feedback on your answers.`
+        },
+        {
+          question: "Give me a quick refresher on data security best practices",
+          answer: "I can provide micro-learning summaries and check your understanding with follow-up questions."
+        },
+        {
+          question: "Test my knowledge on customer service protocols",
+          answer: "I'll generate quiz questions and give you instant feedback based on our training materials."
+        }
+      ];
+    } else {
+      const culture = getCultureResources();
+      return [
+        {
+          question: "What are our company's core values?",
+          answer: `Based on ${culture.length} policy and guide files, I can explain our mission, values, and cultural principles.`
+        },
+        {
+          question: "Tell me about our diversity and inclusion initiatives",
+          answer: "I can summarize our DEI commitments and how they're reflected in our daily operations."
+        },
+        {
+          question: "What makes our company culture unique?",
+          answer: "I'll explain our company principles, work environment, and what we stand for as an organization."
+        }
+      ];
+    }
   };
 
   const handleToggleDocQA = (checked: boolean) => {
@@ -242,7 +299,8 @@ export default function ResourcesManagement() {
         });
         return;
       }
-      setExampleQA(generateExampleQA());
+      setConfirmDialogType('doc-qa');
+      setExampleQA(generateExampleQA('doc-qa'));
       setShowConfirmDialog(true);
     } else {
       setAiDocQAEnabled(false);
@@ -253,13 +311,71 @@ export default function ResourcesManagement() {
     }
   };
 
-  const confirmEnableDocQA = () => {
-    setAiDocQAEnabled(true);
+  const handleToggleTutor = (checked: boolean) => {
+    if (checked) {
+      if (!hasEnoughTraining()) {
+        toast({
+          title: "Insufficient Training Materials",
+          description: `Please upload at least ${MIN_DOCS_REQUIRED} training files (Training category) to enable AI Tutor Mode.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      setConfirmDialogType('tutor');
+      setExampleQA(generateExampleQA('tutor'));
+      setShowConfirmDialog(true);
+    } else {
+      setAiTutorEnabled(false);
+      toast({
+        title: "AI Training Tutor Disabled",
+        description: "The AI assistant will no longer provide training quizzes and feedback.",
+      });
+    }
+  };
+
+  const handleToggleCulture = (checked: boolean) => {
+    if (checked) {
+      if (!hasEnoughCulture()) {
+        toast({
+          title: "Insufficient Culture Documentation",
+          description: `Please upload at least ${MIN_DOCS_REQUIRED} files (Policy or Guide categories) to enable AI Culture explanations.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      setConfirmDialogType('culture');
+      setExampleQA(generateExampleQA('culture'));
+      setShowConfirmDialog(true);
+    } else {
+      setAiCultureEnabled(false);
+      toast({
+        title: "AI Culture Guide Disabled",
+        description: "The AI assistant will no longer explain company culture and values.",
+      });
+    }
+  };
+
+  const confirmEnableAI = () => {
+    if (confirmDialogType === 'doc-qa') {
+      setAiDocQAEnabled(true);
+      toast({
+        title: "AI Documentation Q&A Enabled",
+        description: "The AI assistant can now answer questions based on your company documentation.",
+      });
+    } else if (confirmDialogType === 'tutor') {
+      setAiTutorEnabled(true);
+      toast({
+        title: "AI Training Tutor Enabled",
+        description: "The AI assistant can now provide interactive training quizzes and feedback.",
+      });
+    } else {
+      setAiCultureEnabled(true);
+      toast({
+        title: "AI Culture Guide Enabled",
+        description: "The AI assistant can now explain company culture, values, and mission.",
+      });
+    }
     setShowConfirmDialog(false);
-    toast({
-      title: "AI Documentation Q&A Enabled",
-      description: "The AI assistant can now answer questions based on your company documentation.",
-    });
   };
 
   return (
@@ -306,50 +422,148 @@ export default function ResourcesManagement() {
               AI Abilities & Scope
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="doc-qa" className="text-base font-medium">
-                    Answer Questions on Company Documentation
-                  </Label>
-                  <Switch
-                    id="doc-qa"
-                    checked={aiDocQAEnabled}
-                    onCheckedChange={handleToggleDocQA}
-                  />
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="doc-qa" className="text-base font-medium">
+                      Answer Questions on Company Documentation
+                    </Label>
+                    <Switch
+                      id="doc-qa"
+                      checked={aiDocQAEnabled}
+                      onCheckedChange={handleToggleDocQA}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Enable AI to answer employee questions based on uploaded documentation
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Enable AI to answer employee questions based on uploaded documentation
-                </p>
               </div>
+
+              {hasEnoughDocumentation() ? (
+                <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                      Ready to enable
+                    </p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                      {getDocumentationResources().length} documentation files available
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-900">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      More data needed
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                      Upload at least {MIN_DOCS_REQUIRED} files in Documentation, SOP, or Policy categories ({getDocumentationResources().length}/{MIN_DOCS_REQUIRED} uploaded)
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {hasEnoughDocumentation() ? (
-              <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900">
-                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
-                    Ready to enable
-                  </p>
-                  <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                    {getDocumentationResources().length} documentation files available
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-900">
-                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                    More data needed
-                  </p>
-                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                    Upload at least {MIN_DOCS_REQUIRED} files in Documentation, SOP, or Policy categories ({getDocumentationResources().length}/{MIN_DOCS_REQUIRED} uploaded)
+            <Separator />
+
+            <div className="space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="tutor" className="text-base font-medium">
+                      Training Tutor Mode
+                    </Label>
+                    <Switch
+                      id="tutor"
+                      checked={aiTutorEnabled}
+                      onCheckedChange={handleToggleTutor}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    AI answers quiz-style questions and gives micro-learning feedback on training materials
                   </p>
                 </div>
               </div>
-            )}
+
+              {hasEnoughTraining() ? (
+                <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                      Ready to enable
+                    </p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                      {getTrainingResources().length} training files available
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-900">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      More data needed
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                      Upload at least {MIN_DOCS_REQUIRED} files in Training category ({getTrainingResources().length}/{MIN_DOCS_REQUIRED} uploaded)
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="culture" className="text-base font-medium">
+                      Explain Company Culture & Values
+                    </Label>
+                    <Switch
+                      id="culture"
+                      checked={aiCultureEnabled}
+                      onCheckedChange={handleToggleCulture}
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Summarize company principles, diversity, and mission statements for onboarding
+                  </p>
+                </div>
+              </div>
+
+              {hasEnoughCulture() ? (
+                <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                      Ready to enable
+                    </p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                      {getCultureResources().length} policy/guide files available
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-900">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      More data needed
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                      Upload at least {MIN_DOCS_REQUIRED} files in Policy or Guide categories ({getCultureResources().length}/{MIN_DOCS_REQUIRED} uploaded)
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -456,9 +670,15 @@ export default function ResourcesManagement() {
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Enable AI Documentation Q&A</AlertDialogTitle>
+            <AlertDialogTitle>
+              {confirmDialogType === 'doc-qa' && 'Enable AI Documentation Q&A'}
+              {confirmDialogType === 'tutor' && 'Enable AI Training Tutor Mode'}
+              {confirmDialogType === 'culture' && 'Enable AI Culture & Values Guide'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              The AI assistant will be able to answer questions based on your uploaded documentation. Here are some example questions it can handle:
+              {confirmDialogType === 'doc-qa' && 'The AI assistant will be able to answer questions based on your uploaded documentation. Here are some example questions it can handle:'}
+              {confirmDialogType === 'tutor' && 'The AI assistant will provide interactive training quizzes and micro-learning feedback. Here are some example interactions:'}
+              {confirmDialogType === 'culture' && 'The AI assistant will explain company culture, values, and mission for onboarding. Here are some example questions:'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4 my-4">
@@ -478,8 +698,10 @@ export default function ResourcesManagement() {
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmEnableDocQA}>
-              Enable AI Q&A
+            <AlertDialogAction onClick={confirmEnableAI}>
+              {confirmDialogType === 'doc-qa' && 'Enable AI Q&A'}
+              {confirmDialogType === 'tutor' && 'Enable Tutor Mode'}
+              {confirmDialogType === 'culture' && 'Enable Culture Guide'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
