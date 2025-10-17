@@ -35,6 +35,7 @@ export default function SurveyManagement() {
   const [kpiQuestions, setKpiQuestions] = useState<KPIQuestion[]>([]);
   const [currentWeek, setCurrentWeek] = useState<number>(1);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isEditKPIDialogOpen, setIsEditKPIDialogOpen] = useState(false);
   const [selectedKPI, setSelectedKPI] = useState<KPIQuestion | null>(null);
   const [editedQuestion, setEditedQuestion] = useState("");
@@ -51,6 +52,29 @@ export default function SurveyManagement() {
 
   const currentYear = new Date().getFullYear();
   const currentQuarter = `Q${Math.ceil((new Date().getMonth() + 1) / 3)}`;
+
+  const surveyTemplates = [
+    {
+      title: "Project Retrospective Survey",
+      description: "Gather feedback on recently completed projects to improve future workflows",
+    },
+    {
+      title: "Employee Satisfaction Survey",
+      description: "Measure employee satisfaction and identify areas for workplace improvement",
+    },
+    {
+      title: "Onboarding Experience Survey",
+      description: "Collect feedback from new employees about their onboarding experience",
+    },
+    {
+      title: "Team Collaboration Survey",
+      description: "Assess how well teams are working together and identify collaboration challenges",
+    },
+    {
+      title: "Remote Work Experience Survey",
+      description: "Understand employee experiences with remote work and hybrid arrangements",
+    },
+  ];
 
   useEffect(() => {
     fetchSurveys();
@@ -158,6 +182,16 @@ export default function SurveyManagement() {
     }
   };
 
+  const handleCreateFromTemplate = (template: typeof surveyTemplates[0]) => {
+    setNewSurvey({
+      title: template.title,
+      description: template.description,
+      status: "draft",
+    });
+    setIsTemplateDialogOpen(false);
+    setIsCreateDialogOpen(true);
+  };
+
   const handleDeleteSurvey = async (id: string) => {
     const { error } = await supabase
       .from('surveys')
@@ -233,7 +267,40 @@ export default function SurveyManagement() {
         </TabsList>
 
         <TabsContent value="surveys" className="space-y-4">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  Create from Template
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Choose a Survey Template</DialogTitle>
+                  <DialogDescription>
+                    Select a template to get started quickly with pre-configured survey content
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-3 py-4">
+                  {surveyTemplates.map((template, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className="h-auto justify-start text-left p-4"
+                      onClick={() => handleCreateFromTemplate(template)}
+                    >
+                      <div className="space-y-1">
+                        <p className="font-semibold">{template.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {template.description}
+                        </p>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+            
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
