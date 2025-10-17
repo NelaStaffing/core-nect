@@ -71,7 +71,12 @@ export default function SurveyManagement() {
 
   const fetchKPIQuestions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      console.log("No user found");
+      return;
+    }
+
+    console.log("Fetching KPI questions for:", { user: user.id, year: currentYear, quarter: currentQuarter });
 
     const { data, error } = await supabase
       .from('kpi_questions')
@@ -81,13 +86,23 @@ export default function SurveyManagement() {
       .eq('quarter', currentQuarter)
       .order('week_number', { ascending: true });
 
-    if (!error && data) {
-      setKpiQuestions(data as KPIQuestion[]);
-      
-      // If no questions exist for this quarter, initialize them
-      if (data.length === 0) {
-        await initializeKPIQuestions();
-      }
+    if (error) {
+      console.error("Error fetching KPI questions:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch KPI questions",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Fetched KPI questions:", data);
+    setKpiQuestions(data as KPIQuestion[]);
+    
+    // If no questions exist for this quarter, initialize them
+    if (data.length === 0) {
+      console.log("No questions found, initializing...");
+      await initializeKPIQuestions();
     }
   };
 
@@ -100,22 +115,34 @@ export default function SurveyManagement() {
 
   const initializeKPIQuestions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      console.log("No user for initialization");
+      return;
+    }
 
-    const { error } = await supabase.rpc('initialize_default_kpi_questions', {
+    console.log("Initializing KPI questions with:", { user: user.id, year: currentYear, quarter: currentQuarter });
+
+    const { data, error } = await supabase.rpc('initialize_default_kpi_questions', {
       _company_id: user.id,
       _year: currentYear,
       _quarter: currentQuarter,
     });
 
     if (error) {
+      console.error("Error initializing KPI questions:", error);
       toast({
         title: "Error",
-        description: "Failed to initialize KPI questions",
+        description: `Failed to initialize KPI questions: ${error.message}`,
         variant: "destructive",
       });
     } else {
-      fetchKPIQuestions();
+      console.log("KPI questions initialized successfully", data);
+      toast({
+        title: "Success",
+        description: "KPI questions initialized for this quarter",
+      });
+      // Refresh the questions
+      await fetchKPIQuestions();
     }
   };
 
