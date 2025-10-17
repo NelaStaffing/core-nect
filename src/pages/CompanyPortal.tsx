@@ -11,6 +11,7 @@ import RemoteEngagement from "@/components/company/RemoteEngagement";
 import RequestsManagement from "@/components/company/RequestsManagement";
 import RewardsManagement from "@/components/company/RewardsManagement";
 import EmployeeKPISurvey from "@/components/company/EmployeeKPISurvey";
+import CompanyAssistantWidget from "@/components/company/CompanyAssistantWidget";
 
 export default function CompanyPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -56,6 +57,8 @@ export default function CompanyPortal() {
           {renderContent()}
         </main>
       </div>
+      
+      <CompanyAssistantWidget />
     </div>
   );
 }

@@ -1,7 +1,21 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, FileText, TrendingUp } from "lucide-react";
+import { BarChart3, Users, FileText, TrendingUp, Bot, Send } from "lucide-react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCompanyAssistant } from "@/hooks/useCompanyAssistant";
 
 export default function CompanyMetrics() {
+  const [input, setInput] = useState("");
+  const { messages, sendMessage, isLoading } = useCompanyAssistant();
+
+  const handleSend = () => {
+    if (!input.trim() || isLoading) return;
+    sendMessage(input.trim());
+    setInput("");
+  };
+
   const metrics = [
     {
       title: "Total Employees",
@@ -112,6 +126,79 @@ export default function CompanyMetrics() {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Assistant Chat */}
+      <Card className="h-[500px] flex flex-col">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary" />
+            <CardTitle>AI Assistant</CardTitle>
+          </div>
+          <CardDescription>
+            Ask questions about employees, schedules, or generate reports
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col gap-3">
+          <ScrollArea className="flex-1 pr-4">
+            {messages.length === 0 ? (
+              <div className="text-center text-muted-foreground py-12">
+                <Bot className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium mb-2">Welcome! How can I assist you?</p>
+                <p className="text-sm">Try asking:</p>
+                <ul className="text-sm mt-3 space-y-1 text-left max-w-md mx-auto">
+                  <li>• "How many pending KPI surveys do I have?"</li>
+                  <li>• "Generate a summary report for this week"</li>
+                  <li>• "What are the upcoming important dates?"</li>
+                </ul>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`rounded-lg px-4 py-3 max-w-[80%] ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-lg px-4 py-3">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce delay-100" />
+                        <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce delay-200" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </ScrollArea>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder="Ask a question..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
