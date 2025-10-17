@@ -228,27 +228,39 @@ export type Database = {
       kpi_questions: {
         Row: {
           active: boolean | null
+          company_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
+          quarter: string | null
           question_text: string
           question_type: string
+          week_number: number | null
+          year: number | null
         }
         Insert: {
           active?: boolean | null
+          company_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
+          quarter?: string | null
           question_text: string
           question_type?: string
+          week_number?: number | null
+          year?: number | null
         }
         Update: {
           active?: boolean | null
+          company_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
+          quarter?: string | null
           question_text?: string
           question_type?: string
+          week_number?: number | null
+          year?: number | null
         }
         Relationships: []
       }
@@ -575,6 +587,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_quarter_week: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
@@ -585,6 +601,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_default_kpi_questions: {
+        Args: { _company_id: string; _quarter: string; _year: number }
+        Returns: undefined
       }
     }
     Enums: {
