@@ -6,11 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, FileText, Trash2, Download, Search, Bot, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, Trash2, Download, Search, Bot, CheckCircle, AlertCircle, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Resource {
   id: string;
@@ -34,6 +35,11 @@ export default function ResourcesManagement() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmDialogType, setConfirmDialogType] = useState<'doc-qa' | 'tutor' | 'culture'>('doc-qa');
   const [exampleQA, setExampleQA] = useState<{ question: string; answer: string }[]>([]);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadCategory, setUploadCategory] = useState<string>("Documentation");
+  const [uploadDescription, setUploadDescription] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
 
   const categories = ["Documentation", "SOP", "Training", "Policy", "Guide", "Other"];
@@ -60,9 +66,50 @@ export default function ResourcesManagement() {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "Error",
+        description: "Please select a file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!uploadDescription.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a description for the file",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
 
@@ -70,13 +117,13 @@ export default function ResourcesManagement() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const fileExt = file.name.split(".").pop();
+      const fileExt = selectedFile.name.split(".").pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("company-resources")
-        .upload(filePath, file);
+        .upload(filePath, selectedFile);
 
       if (uploadError) throw uploadError;
 
@@ -84,12 +131,13 @@ export default function ResourcesManagement() {
         .from("company_resources")
         .insert({
           company_id: user.id,
-          file_name: file.name,
+          file_name: selectedFile.name,
           file_path: filePath,
-          file_type: file.type,
-          file_size: file.size,
+          file_type: selectedFile.type,
+          file_size: selectedFile.size,
           uploaded_by: user.id,
-          category: "Other",
+          category: uploadCategory,
+          description: uploadDescription.trim(),
         });
 
       if (dbError) throw dbError;
@@ -100,7 +148,10 @@ export default function ResourcesManagement() {
       });
 
       fetchResources();
-      event.target.value = "";
+      setShowUploadDialog(false);
+      setSelectedFile(null);
+      setUploadDescription("");
+      setUploadCategory("Documentation");
     } catch (error) {
       toast({
         title: "Error",
@@ -393,25 +444,122 @@ export default function ResourcesManagement() {
             <CardTitle>Upload New Resource</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-4">
-              <Label
-                htmlFor="file-upload"
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
-              >
-                <Upload className="h-4 w-4" />
-                {isUploading ? "Uploading..." : "Upload File"}
-              </Label>
-              <Input
-                id="file-upload"
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={isUploading}
-              />
-              <p className="text-sm text-muted-foreground">
-                Supports all document types (PDF, DOCX, TXT, etc.)
-              </p>
-            </div>
+            <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+              <DialogTrigger asChild>
+                <Button className="w-full">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload New File
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Upload Resource</DialogTitle>
+                  <DialogDescription>
+                    Select a category, upload your file, and provide a description.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category *</Label>
+                    <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                      <SelectTrigger id="category">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Documentation">Documentation</SelectItem>
+                        <SelectItem value="SOP">SOP</SelectItem>
+                        <SelectItem value="Training">Training</SelectItem>
+                        <SelectItem value="Policy">Policy</SelectItem>
+                        <SelectItem value="Guide">Guide</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>File *</Label>
+                    <div
+                      className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        isDragging
+                          ? "border-primary bg-primary/5"
+                          : "border-muted-foreground/25 hover:border-primary/50"
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      <Input
+                        id="file-input"
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileSelect}
+                      />
+                      {selectedFile ? (
+                        <div className="space-y-2">
+                          <FileText className="h-12 w-12 mx-auto text-primary" />
+                          <p className="text-sm font-medium">{selectedFile.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(selectedFile.size / 1024).toFixed(2)} KB
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedFile(null)}
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+                          <div>
+                            <Label
+                              htmlFor="file-input"
+                              className="text-primary hover:underline cursor-pointer"
+                            >
+                              Click to upload
+                            </Label>
+                            <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Supports all document types (PDF, DOCX, TXT, etc.)
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description *</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Provide a brief description of this resource..."
+                      value={uploadDescription}
+                      onChange={(e) => setUploadDescription(e.target.value)}
+                      rows={4}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowUploadDialog(false);
+                      setSelectedFile(null);
+                      setUploadDescription("");
+                      setUploadCategory("Documentation");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleFileUpload} disabled={isUploading}>
+                    {isUploading ? "Uploading..." : "Upload"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
