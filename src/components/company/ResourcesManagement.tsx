@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Upload, FileText, Trash2, Download, Search } from "lucide-react";
+import { Upload, FileText, Trash2, Download, Search, Bot, CheckCircle, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Resource {
   id: string;
@@ -25,9 +27,13 @@ export default function ResourcesManagement() {
   const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [aiDocQAEnabled, setAiDocQAEnabled] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [exampleQA, setExampleQA] = useState<{ question: string; answer: string }[]>([]);
   const { toast } = useToast();
 
   const categories = ["Documentation", "SOP", "Training", "Policy", "Guide", "Other"];
+  const MIN_DOCS_REQUIRED = 3;
 
   useEffect(() => {
     fetchResources();
@@ -196,6 +202,66 @@ export default function ResourcesManagement() {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
   };
 
+  const getDocumentationResources = () => {
+    return resources.filter(r => 
+      r.category === "Documentation" || 
+      r.category === "SOP" || 
+      r.category === "Policy"
+    );
+  };
+
+  const hasEnoughDocumentation = () => {
+    return getDocumentationResources().length >= MIN_DOCS_REQUIRED;
+  };
+
+  const generateExampleQA = () => {
+    const docs = getDocumentationResources();
+    return [
+      {
+        question: "What is our company's remote work policy?",
+        answer: `Based on ${docs.length} documentation files, I can help answer questions about company policies, procedures, and guidelines.`
+      },
+      {
+        question: "How do I submit a vacation request?",
+        answer: "I can guide you through the process using our documented procedures."
+      },
+      {
+        question: "What are the steps for onboarding new employees?",
+        answer: "I have access to SOPs and training materials to provide detailed onboarding information."
+      }
+    ];
+  };
+
+  const handleToggleDocQA = (checked: boolean) => {
+    if (checked) {
+      if (!hasEnoughDocumentation()) {
+        toast({
+          title: "Insufficient Documentation",
+          description: `Please upload at least ${MIN_DOCS_REQUIRED} documentation files (Documentation, SOP, or Policy categories) to enable AI Q&A.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      setExampleQA(generateExampleQA());
+      setShowConfirmDialog(true);
+    } else {
+      setAiDocQAEnabled(false);
+      toast({
+        title: "AI Documentation Q&A Disabled",
+        description: "The AI assistant will no longer answer questions based on company documentation.",
+      });
+    }
+  };
+
+  const confirmEnableDocQA = () => {
+    setAiDocQAEnabled(true);
+    setShowConfirmDialog(false);
+    toast({
+      title: "AI Documentation Q&A Enabled",
+      description: "The AI assistant can now answer questions based on your company documentation.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -205,32 +271,88 @@ export default function ResourcesManagement() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload New Resource</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <Label
-              htmlFor="file-upload"
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
-            >
-              <Upload className="h-4 w-4" />
-              {isUploading ? "Uploading..." : "Upload File"}
-            </Label>
-            <Input
-              id="file-upload"
-              type="file"
-              className="hidden"
-              onChange={handleFileUpload}
-              disabled={isUploading}
-            />
-            <p className="text-sm text-muted-foreground">
-              Supports all document types (PDF, DOCX, TXT, etc.)
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload New Resource</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <Label
+                htmlFor="file-upload"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90"
+              >
+                <Upload className="h-4 w-4" />
+                {isUploading ? "Uploading..." : "Upload File"}
+              </Label>
+              <Input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+              <p className="text-sm text-muted-foreground">
+                Supports all document types (PDF, DOCX, TXT, etc.)
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              AI Abilities & Scope
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="doc-qa" className="text-base font-medium">
+                    Answer Questions on Company Documentation
+                  </Label>
+                  <Switch
+                    id="doc-qa"
+                    checked={aiDocQAEnabled}
+                    onCheckedChange={handleToggleDocQA}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Enable AI to answer employee questions based on uploaded documentation
+                </p>
+              </div>
+            </div>
+
+            {hasEnoughDocumentation() ? (
+              <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                    Ready to enable
+                  </p>
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                    {getDocumentationResources().length} documentation files available
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-900">
+                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                    More data needed
+                  </p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    Upload at least {MIN_DOCS_REQUIRED} files in Documentation, SOP, or Policy categories ({getDocumentationResources().length}/{MIN_DOCS_REQUIRED} uploaded)
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="flex gap-4">
         <div className="relative flex-1">
@@ -330,6 +452,38 @@ export default function ResourcesManagement() {
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Enable AI Documentation Q&A</AlertDialogTitle>
+            <AlertDialogDescription>
+              The AI assistant will be able to answer questions based on your uploaded documentation. Here are some example questions it can handle:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 my-4">
+            {exampleQA.map((qa, index) => (
+              <div key={index} className="border rounded-lg p-4 space-y-2">
+                <div className="flex items-start gap-2">
+                  <div className="bg-primary/10 rounded-full p-1.5 mt-0.5">
+                    <Bot className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm mb-2">{qa.question}</p>
+                    <p className="text-sm text-muted-foreground">{qa.answer}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmEnableDocQA}>
+              Enable AI Q&A
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
