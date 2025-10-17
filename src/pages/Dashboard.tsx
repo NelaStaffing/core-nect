@@ -90,6 +90,8 @@ export default function Dashboard() {
   const handleAppClick = (app: MicroApp) => {
     if (app.id === "employee") {
       navigate("/employee");
+    } else if (app.id === "company") {
+      navigate("/company");
     } else {
       toast({
         title: `Opening ${app.title}`,
