@@ -1,4 +1,4 @@
-import { Home, Trophy, BookOpen, Calendar, Settings, LogOut, ClipboardList, MessageSquare } from "lucide-react";
+import { Home, Trophy, BookOpen, Calendar, Settings, LogOut, ClipboardList, MessageSquare, FileCheck, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +12,9 @@ const menuItems = [
   { id: "home", label: "Home", icon: Home },
   { id: "surveys", label: "Surveys", icon: ClipboardList },
   { id: "feedback", label: "Feedback", icon: MessageSquare },
+  { id: "requests", label: "My Requests", icon: FileCheck },
   { id: "achievements", label: "Achievements", icon: Trophy },
+  { id: "rewards", label: "Rewards", icon: Gift },
   { id: "learning", label: "Learning", icon: BookOpen },
   { id: "schedule", label: "Schedule", icon: Calendar },
   { id: "settings", label: "Settings", icon: Settings },

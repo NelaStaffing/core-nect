@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          points: number
+          required_count: number | null
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          points?: number
+          required_count?: number | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          points?: number
+          required_count?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       company_metrics: {
         Row: {
           company_id: string
@@ -38,6 +71,51 @@ export type Database = {
           metric_date?: string
           metric_type?: string
           metric_value?: number
+        }
+        Relationships: []
+      }
+      employee_requests: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          request_type: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          request_type: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          request_type?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -95,6 +173,86 @@ export type Database = {
           id?: string
           last_name?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          id: string
+          points_spent: number
+          reward_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          points_spent: number
+          reward_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          points_spent?: number
+          reward_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean | null
+          category: string | null
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          points_cost: number
+          stock_quantity: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string | null
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          points_cost: number
+          stock_quantity?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          category?: string | null
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          points_cost?: number
+          stock_quantity?: number | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -219,6 +377,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          created_at: string
+          id: string
+          progress: number | null
+          unlocked: boolean | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          created_at?: string
+          id?: string
+          progress?: number | null
+          unlocked?: boolean | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          created_at?: string
+          id?: string
+          progress?: number | null
+          unlocked?: boolean | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

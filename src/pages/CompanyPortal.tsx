@@ -8,6 +8,8 @@ import CompanyMetrics from "@/components/company/CompanyMetrics";
 import TeamStatus from "@/components/company/TeamStatus";
 import StaffingManagement from "@/components/company/StaffingManagement";
 import RemoteEngagement from "@/components/company/RemoteEngagement";
+import RequestsManagement from "@/components/company/RequestsManagement";
+import RewardsManagement from "@/components/company/RewardsManagement";
 
 export default function CompanyPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -24,6 +26,10 @@ export default function CompanyPortal() {
         return <StaffingManagement />;
       case "engagement":
         return <RemoteEngagement />;
+      case "requests":
+        return <RequestsManagement />;
+      case "rewards":
+        return <RewardsManagement />;
       case "surveys":
         return <SurveyManagement />;
       case "metrics":

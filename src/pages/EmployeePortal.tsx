@@ -3,6 +3,9 @@ import EmployeeSidebar from "@/components/employee/EmployeeSidebar";
 import EmployeeHome from "@/components/employee/EmployeeHome";
 import EmployeeSurveys from "@/components/employee/EmployeeSurveys";
 import EmployeeFeedback from "@/components/employee/EmployeeFeedback";
+import EmployeeRequests from "@/components/employee/EmployeeRequests";
+import EmployeeAchievements from "@/components/employee/EmployeeAchievements";
+import EmployeeRewards from "@/components/employee/EmployeeRewards";
 import Chatbot from "@/components/employee/Chatbot";
 
 export default function EmployeePortal() {
@@ -18,6 +21,9 @@ export default function EmployeePortal() {
         {activePage === "home" && <EmployeeHome />}
         {activePage === "surveys" && <EmployeeSurveys />}
         {activePage === "feedback" && <EmployeeFeedback />}
+        {activePage === "requests" && <EmployeeRequests />}
+        {activePage === "achievements" && <EmployeeAchievements />}
+        {activePage === "rewards" && <EmployeeRewards />}
       </main>
 
       {/* Chatbot */}

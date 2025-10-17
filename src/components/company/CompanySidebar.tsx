@@ -1,4 +1,4 @@
-import { Users, FileText, BarChart3, LayoutDashboard, Activity, UserCog, Heart } from "lucide-react";
+import { Users, FileText, BarChart3, LayoutDashboard, Activity, UserCog, Heart, ClipboardCheck, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CompanySidebarProps {
@@ -12,6 +12,8 @@ const menuItems = [
   { id: "team-status", label: "Team Status", icon: Activity },
   { id: "staffing", label: "Staffing", icon: UserCog },
   { id: "engagement", label: "Engagement", icon: Heart },
+  { id: "requests", label: "Requests", icon: ClipboardCheck },
+  { id: "rewards", label: "Rewards", icon: Gift },
   { id: "surveys", label: "Surveys", icon: FileText },
   { id: "metrics", label: "Metrics", icon: BarChart3 },
 ];
