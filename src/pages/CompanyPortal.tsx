@@ -10,6 +10,7 @@ import StaffingManagement from "@/components/company/StaffingManagement";
 import RemoteEngagement from "@/components/company/RemoteEngagement";
 import RequestsManagement from "@/components/company/RequestsManagement";
 import RewardsManagement from "@/components/company/RewardsManagement";
+import EmployeeKPISurvey from "@/components/company/EmployeeKPISurvey";
 
 export default function CompanyPortal() {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -17,7 +18,7 @@ export default function CompanyPortal() {
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
-        return <CompanyDashboard />;
+        return <CompanyDashboard onNavigate={setActiveSection} />;
       case "employees":
         return <EmployeeManagement />;
       case "resources":
@@ -34,8 +35,10 @@ export default function CompanyPortal() {
         return <SurveyManagement />;
       case "metrics":
         return <CompanyMetrics />;
+      case "kpi-surveys":
+        return <EmployeeKPISurvey onBack={() => setActiveSection("dashboard")} />;
       default:
-        return <CompanyDashboard />;
+        return <CompanyDashboard onNavigate={setActiveSection} />;
     }
   };
 

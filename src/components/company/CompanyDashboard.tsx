@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, AlertCircle, Calendar } from "lucide-react";
+import { TrendingUp, AlertCircle, Calendar, Clock, Users } from "lucide-react";
 import { format } from "date-fns";
 
 interface RecentResponse {
@@ -22,7 +23,11 @@ interface EmployeePerformance {
   response_count: number;
 }
 
-export default function CompanyDashboard() {
+interface CompanyDashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+export default function CompanyDashboard({ onNavigate }: CompanyDashboardProps) {
   const [recentResponses, setRecentResponses] = useState<RecentResponse[]>([]);
   const [topPerformers, setTopPerformers] = useState<EmployeePerformance[]>([]);
   const [needsAttention, setNeedsAttention] = useState<EmployeePerformance[]>([]);
@@ -149,6 +154,43 @@ export default function CompanyDashboard() {
           Overview of employee engagement and performance
         </p>
       </div>
+
+      {/* Pending KPI Surveys Alert */}
+      <Card className="border-orange-500/20 bg-orange-500/5">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-500" />
+                Pending KPI Surveys
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Complete this week's employee performance pulse
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="bg-orange-500/10 text-orange-500">
+              90 seconds
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>6 employees</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>Due: This week</span>
+              </div>
+            </div>
+            <Button onClick={() => onNavigate?.("kpi-surveys")}>
+              Start KPI Survey
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Survey Responses */}
       <Card>

@@ -127,6 +127,45 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_kpi_surveys: {
+        Row: {
+          created_at: string | null
+          employee_id: string
+          employee_name: string
+          id: string
+          kpi_feedback: string | null
+          kpi_score: number
+          manager_id: string
+          mood_rating: number
+          submitted_at: string | null
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id: string
+          employee_name: string
+          id?: string
+          kpi_feedback?: string | null
+          kpi_score: number
+          manager_id: string
+          mood_rating: number
+          submitted_at?: string | null
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string
+          employee_name?: string
+          id?: string
+          kpi_feedback?: string | null
+          kpi_score?: number
+          manager_id?: string
+          mood_rating?: number
+          submitted_at?: string | null
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       employee_requests: {
         Row: {
           created_at: string
