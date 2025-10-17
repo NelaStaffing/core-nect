@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -7,6 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+interface KPIQuestion {
+  id: string;
+  question_text: string;
+  question_type: string;
+}
 
 interface EmployeeKPISurveyProps {
   onBack: () => void;
@@ -35,6 +41,50 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
     Record<string, { mood: number | null; kpi: number; feedback: string }>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [kpiQuestion, setKpiQuestion] = useState<KPIQuestion | null>(null);
+  const [loadingQuestion, setLoadingQuestion] = useState(true);
+
+  useEffect(() => {
+    fetchRandomKPIQuestion();
+  }, []);
+
+  const fetchRandomKPIQuestion = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("kpi_questions")
+        .select("*")
+        .eq("active", true);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Select a random question
+        const randomIndex = Math.floor(Math.random() * data.length);
+        setKpiQuestion(data[randomIndex]);
+      } else {
+        // Fallback question if no questions in database
+        setKpiQuestion({
+          id: "fallback",
+          question_text: "Overall KPI Score",
+          question_type: "scale",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching KPI question:", error);
+      toast({
+        title: "Error loading question",
+        description: "Using default KPI question",
+        variant: "destructive",
+      });
+      setKpiQuestion({
+        id: "fallback",
+        question_text: "Overall KPI Score",
+        question_type: "scale",
+      });
+    } finally {
+      setLoadingQuestion(false);
+    }
+  };
 
   const currentEmployee = mockEmployees[currentEmployeeIndex];
   const progress = ((currentEmployeeIndex + 1) / mockEmployees.length) * 100;
@@ -90,6 +140,15 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
   };
 
   const handleSubmitAll = async () => {
+    if (!kpiQuestion) {
+      toast({
+        title: "Error",
+        description: "KPI question not loaded",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const {
@@ -119,6 +178,8 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
           mood_rating: response.mood!,
           kpi_score: response.kpi,
           kpi_feedback: response.feedback || null,
+          kpi_question_id: kpiQuestion.id !== "fallback" ? kpiQuestion.id : null,
+          kpi_question_text: kpiQuestion.question_text,
           week_start_date: weekStartDate,
         }));
 
@@ -146,6 +207,22 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
   };
 
   const completedCount = Object.values(responses).filter((r) => r.mood !== null).length;
+
+  if (loadingQuestion) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Loading KPI questions...</p>
+      </div>
+    );
+  }
+
+  if (!kpiQuestion) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">No KPI questions available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -218,25 +295,73 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
             </div>
           </div>
 
-          {/* KPI Score */}
+          {/* KPI Question - Dynamic from database */}
           <div className="space-y-6 px-4">
-            <h3 className="font-semibold text-lg">Overall KPI Score</h3>
-            <div className="text-center">
-              <span className="text-5xl font-bold text-primary">{currentResponse.kpi}</span>
-              <span className="text-muted-foreground text-lg">/5</span>
-            </div>
-            <Slider
-              value={[currentResponse.kpi]}
-              onValueChange={handleKPIChange}
-              max={5}
-              min={0}
-              step={1}
-              className="cursor-pointer"
-            />
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Needs Improvement</span>
-              <span>Excellent</span>
-            </div>
+            <h3 className="font-semibold text-lg">{kpiQuestion.question_text}</h3>
+            
+            {kpiQuestion.question_type === "scale" && (
+              <>
+                <div className="text-center">
+                  <span className="text-5xl font-bold text-primary">{currentResponse.kpi}</span>
+                  <span className="text-muted-foreground text-lg">/5</span>
+                </div>
+                <Slider
+                  value={[currentResponse.kpi]}
+                  onValueChange={handleKPIChange}
+                  max={5}
+                  min={0}
+                  step={1}
+                  className="cursor-pointer"
+                />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Strongly Disagree</span>
+                  <span>Strongly Agree</span>
+                </div>
+              </>
+            )}
+
+            {kpiQuestion.question_type === "yesno" && (
+              <div className="flex justify-center gap-4">
+                <Button
+                  size="lg"
+                  variant={currentResponse.kpi === 5 ? "default" : "outline"}
+                  onClick={() => handleKPIChange([5])}
+                  className="w-32 h-20 text-lg"
+                >
+                  Yes
+                </Button>
+                <Button
+                  size="lg"
+                  variant={currentResponse.kpi === 0 ? "default" : "outline"}
+                  onClick={() => handleKPIChange([0])}
+                  className="w-32 h-20 text-lg"
+                >
+                  No
+                </Button>
+              </div>
+            )}
+
+            {kpiQuestion.question_type === "rating" && (
+              <div className="flex justify-center gap-4">
+                {[
+                  { label: "Poor", value: 1 },
+                  { label: "Fair", value: 2 },
+                  { label: "Good", value: 3 },
+                  { label: "Very Good", value: 4 },
+                  { label: "Excellent", value: 5 },
+                ].map((rating) => (
+                  <Button
+                    key={rating.value}
+                    size="lg"
+                    variant={currentResponse.kpi === rating.value ? "default" : "outline"}
+                    onClick={() => handleKPIChange([rating.value])}
+                    className="h-20 text-sm flex-1"
+                  >
+                    {rating.label}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Optional Feedback */}

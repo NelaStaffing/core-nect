@@ -134,6 +134,8 @@ export type Database = {
           employee_name: string
           id: string
           kpi_feedback: string | null
+          kpi_question_id: string | null
+          kpi_question_text: string | null
           kpi_score: number
           manager_id: string
           mood_rating: number
@@ -146,6 +148,8 @@ export type Database = {
           employee_name: string
           id?: string
           kpi_feedback?: string | null
+          kpi_question_id?: string | null
+          kpi_question_text?: string | null
           kpi_score: number
           manager_id: string
           mood_rating: number
@@ -158,13 +162,23 @@ export type Database = {
           employee_name?: string
           id?: string
           kpi_feedback?: string | null
+          kpi_question_id?: string | null
+          kpi_question_text?: string | null
           kpi_score?: number
           manager_id?: string
           mood_rating?: number
           submitted_at?: string | null
           week_start_date?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "employee_kpi_surveys_kpi_question_id_fkey"
+            columns: ["kpi_question_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_questions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employee_requests: {
         Row: {
@@ -208,6 +222,33 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      kpi_questions: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          question_text: string
+          question_type: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          question_text: string
+          question_type?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          question_text?: string
+          question_type?: string
         }
         Relationships: []
       }
