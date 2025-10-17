@@ -34,9 +34,6 @@ export default function EmployeeAchievements() {
   }, [achievements, userProgress]);
 
   const fetchAchievements = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     // Fetch all achievements
     const { data: achievementsData, error: achError } = await supabase
       .from("achievements")
@@ -44,22 +41,32 @@ export default function EmployeeAchievements() {
       .order("points", { ascending: false });
 
     if (achError) {
+      console.error("Error loading achievements:", achError);
       toast({ title: "Error loading achievements", variant: "destructive" });
       return;
     }
 
-    // Fetch user progress
+    setAchievements(achievementsData || []);
+
+    // Fetch user progress if authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setUserProgress([]);
+      setTotalPoints(0);
+      return;
+    }
+
     const { data: progressData, error: progError } = await supabase
       .from("user_achievements")
       .select("*")
       .eq("user_id", user.id);
 
     if (progError) {
+      console.error("Error loading progress:", progError);
       toast({ title: "Error loading progress", variant: "destructive" });
       return;
     }
 
-    setAchievements(achievementsData || []);
     setUserProgress(progressData || []);
 
     // Calculate total points from unlocked achievements
