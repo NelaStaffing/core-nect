@@ -22,6 +22,7 @@ export type Database = {
           icon: string | null
           id: string
           points: number
+          prerequisite_id: string | null
           required_count: number | null
           title: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           icon?: string | null
           id?: string
           points?: number
+          prerequisite_id?: string | null
           required_count?: number | null
           title: string
         }
@@ -42,10 +44,19 @@ export type Database = {
           icon?: string | null
           id?: string
           points?: number
+          prerequisite_id?: string | null
           required_count?: number | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "achievements_prerequisite_id_fkey"
+            columns: ["prerequisite_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_metrics: {
         Row: {

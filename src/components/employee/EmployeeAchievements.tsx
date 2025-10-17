@@ -100,28 +100,48 @@ export default function EmployeeAchievements() {
     return colors[category] || "bg-gray-500";
   };
 
+  const isNodeVisible = (achievement: any) => {
+    const progress = getProgressForAchievement(achievement.id);
+    
+    // Show if unlocked
+    if (progress?.unlocked) return true;
+    
+    // Show if no prerequisite (starter achievements)
+    if (!achievement.prerequisite_id) return true;
+    
+    // Show if prerequisite is unlocked (immediate next nodes)
+    const prerequisiteProgress = userProgress.find(
+      (p) => p.achievement_id === achievement.prerequisite_id
+    );
+    if (prerequisiteProgress?.unlocked) return true;
+    
+    return false;
+  };
+
   const generateSkillTree = () => {
+    // Filter visible achievements
+    const visibleAchievements = achievements.filter(isNodeVisible);
+    
     // Create a tree layout with nodes arranged in layers
     const centerX = 400;
     const centerY = 500;
-    const layerRadius = [0, 120, 200, 280, 360]; // Distance from center for each layer
+    const layerRadius = [0, 120, 200, 280, 360];
     
     const treeNodes: AchievementNode[] = [];
-    const categories = [...new Set(achievements.map(a => a.category))];
     
-    achievements.forEach((achievement, index) => {
+    visibleAchievements.forEach((achievement, index) => {
       const progress = getProgressForAchievement(achievement.id);
       const layer = Math.floor(index / 6) + 1;
       const posInLayer = index % 6;
-      const angleStep = (Math.PI * 2) / Math.max(6, achievements.length / layer);
+      const angleStep = (Math.PI * 2) / Math.max(6, visibleAchievements.length / layer);
       const angle = angleStep * posInLayer - Math.PI / 2;
       
       const radius = layerRadius[Math.min(layer, layerRadius.length - 1)];
       const x = centerX + Math.cos(angle) * radius;
       const y = centerY + Math.sin(angle) * radius;
       
-      // Simple connection logic: connect to previous achievements
-      const connections = index > 0 ? [achievements[Math.max(0, index - 1)].id] : [];
+      // Connect to prerequisite if it exists
+      const connections = achievement.prerequisite_id ? [achievement.prerequisite_id] : [];
       
       treeNodes.push({
         id: achievement.id,
