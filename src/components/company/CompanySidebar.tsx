@@ -1,4 +1,4 @@
-import { Users, FileText, BarChart3, Megaphone } from "lucide-react";
+import { Users, FileText, BarChart3, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CompanySidebarProps {
@@ -7,6 +7,7 @@ interface CompanySidebarProps {
 }
 
 const menuItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "employees", label: "Employees", icon: Users },
   { id: "surveys", label: "Surveys", icon: FileText },
   { id: "metrics", label: "Metrics", icon: BarChart3 },

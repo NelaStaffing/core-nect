@@ -1,15 +1,18 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import CompanySidebar from "@/components/company/CompanySidebar";
+import CompanyDashboard from "@/components/company/CompanyDashboard";
 import EmployeeManagement from "@/components/company/EmployeeManagement";
 import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
 
 export default function CompanyPortal() {
-  const [activeSection, setActiveSection] = useState("employees");
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   const renderContent = () => {
     switch (activeSection) {
+      case "dashboard":
+        return <CompanyDashboard />;
       case "employees":
         return <EmployeeManagement />;
       case "surveys":
@@ -17,7 +20,7 @@ export default function CompanyPortal() {
       case "metrics":
         return <CompanyMetrics />;
       default:
-        return <EmployeeManagement />;
+        return <CompanyDashboard />;
     }
   };
 
