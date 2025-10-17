@@ -4,9 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 interface KPIQuestion {
   id: string;
@@ -43,6 +53,9 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [kpiQuestion, setKpiQuestion] = useState<KPIQuestion | null>(null);
   const [loadingQuestion, setLoadingQuestion] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     fetchRandomKPIQuestion();
@@ -83,6 +96,30 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
       });
     } finally {
       setLoadingQuestion(false);
+    }
+  };
+
+  const fetchEmployeeHistory = async (employeeId: string) => {
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from("employee_kpi_surveys")
+        .select("*")
+        .eq("employee_id", employeeId)
+        .order("week_start_date", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setHistoryData(data || []);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      toast({
+        title: "Error loading history",
+        description: "Could not load employee history",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingHistory(false);
     }
   };
 
@@ -262,10 +299,84 @@ export default function EmployeeKPISurvey({ onBack }: EmployeeKPISurveyProps) {
       <Card className="shadow-lg">
         <CardHeader>
           <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="text-2xl md:text-3xl">
-                {currentEmployee.name}
-              </CardTitle>
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-2xl md:text-3xl">
+                  {currentEmployee.name}
+                </CardTitle>
+                <Drawer open={historyOpen} onOpenChange={setHistoryOpen}>
+                  <DrawerTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchEmployeeHistory(currentEmployee.id)}
+                    >
+                      <History className="w-4 h-4 mr-2" />
+                      History
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>KPI History - {currentEmployee.name}</DrawerTitle>
+                      <DrawerDescription>
+                        Past performance ratings and feedback
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="px-4 pb-4 max-h-[60vh] overflow-y-auto">
+                      {loadingHistory ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          Loading history...
+                        </div>
+                      ) : historyData.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No previous entries found
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {historyData.map((entry) => (
+                            <Card key={entry.id}>
+                              <CardContent className="pt-6">
+                                <div className="space-y-3">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <p className="text-sm text-muted-foreground">
+                                        Week of {new Date(entry.week_start_date).toLocaleDateString()}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        {new Date(entry.submitted_at).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                    <Badge variant={entry.mood_rating === 3 ? "default" : entry.mood_rating === 2 ? "secondary" : "destructive"}>
+                                      {entry.mood_rating === 3 ? "🌟 Excelling" : entry.mood_rating === 2 ? "😐 On Track" : "😟 Needs Support"}
+                                    </Badge>
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm">{entry.kpi_question_text}</p>
+                                    <p className="text-2xl font-bold text-primary mt-1">
+                                      {entry.kpi_score}/5
+                                    </p>
+                                  </div>
+                                  {entry.kpi_feedback && (
+                                    <div className="pt-2 border-t">
+                                      <p className="text-sm text-muted-foreground">Feedback:</p>
+                                      <p className="text-sm mt-1">{entry.kpi_feedback}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <DrawerFooter>
+                      <DrawerClose asChild>
+                        <Button variant="outline">Close</Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </DrawerContent>
+                </Drawer>
+              </div>
               <CardDescription className="text-base mt-1">
                 {currentEmployee.role}
               </CardDescription>
