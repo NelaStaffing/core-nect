@@ -9,7 +9,7 @@ interface CompanySidebarProps {
 const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "employees", label: "Employees", icon: Users },
-  { id: "team-status", label: "Team Status", icon: Activity },
+  { id: "resources", label: "Resources", icon: Activity },
   { id: "staffing", label: "Staffing", icon: UserCog },
   { id: "engagement", label: "Engagement", icon: Heart },
   { id: "requests", label: "Requests", icon: ClipboardCheck },

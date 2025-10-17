@@ -5,7 +5,7 @@ import CompanyDashboard from "@/components/company/CompanyDashboard";
 import EmployeeManagement from "@/components/company/EmployeeManagement";
 import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
-import TeamStatus from "@/components/company/TeamStatus";
+import ResourcesManagement from "@/components/company/ResourcesManagement";
 import StaffingManagement from "@/components/company/StaffingManagement";
 import RemoteEngagement from "@/components/company/RemoteEngagement";
 import RequestsManagement from "@/components/company/RequestsManagement";
@@ -20,8 +20,8 @@ export default function CompanyPortal() {
         return <CompanyDashboard />;
       case "employees":
         return <EmployeeManagement />;
-      case "team-status":
-        return <TeamStatus />;
+      case "resources":
+        return <ResourcesManagement />;
       case "staffing":
         return <StaffingManagement />;
       case "engagement":

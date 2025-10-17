@@ -85,6 +85,48 @@ export type Database = {
         }
         Relationships: []
       }
+      company_resources: {
+        Row: {
+          category: string | null
+          company_id: string
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          updated_at: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          category?: string | null
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          updated_at?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          category?: string | null
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          updated_at?: string | null
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       employee_requests: {
         Row: {
           created_at: string
