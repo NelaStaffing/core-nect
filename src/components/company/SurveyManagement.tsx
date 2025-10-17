@@ -70,21 +70,11 @@ export default function SurveyManagement() {
   };
 
   const fetchKPIQuestions = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.log("No user found");
-      return;
-    }
-
-    console.log("Fetching KPI questions for:", { user: user.id, year: currentYear, quarter: currentQuarter });
-
     const { data, error } = await supabase
       .from('kpi_questions')
       .select('*')
-      .eq('company_id', user.id)
-      .eq('year', currentYear)
-      .eq('quarter', currentQuarter)
-      .order('week_number', { ascending: true });
+      .order('week_number', { ascending: true, nullsFirst: true })
+      .order('created_at', { ascending: true });
 
     if (error) {
       console.error("Error fetching KPI questions:", error);
@@ -96,14 +86,7 @@ export default function SurveyManagement() {
       return;
     }
 
-    console.log("Fetched KPI questions:", data);
     setKpiQuestions(data as KPIQuestion[]);
-    
-    // If no questions exist for this quarter, initialize them
-    if (data.length === 0) {
-      console.log("No questions found, initializing...");
-      await initializeKPIQuestions();
-    }
   };
 
   const fetchCurrentWeek = async () => {
