@@ -5,11 +5,11 @@ import { Trophy, Target, TrendingUp, Star } from "lucide-react";
 
 export default function EmployeeHome() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold mb-2">Welcome Back! 👋</h1>
-        <p className="text-muted-foreground text-lg">
+        <h1 className="text-2xl md:text-4xl font-bold mb-2">Welcome Back! 👋</h1>
+        <p className="text-muted-foreground text-base md:text-lg">
           Here's your progress and achievements
         </p>
       </div>
@@ -110,13 +110,13 @@ export default function EmployeeHome() {
           <CardDescription>Common tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {["Start Learning", "View Schedule", "Team Chat", "Submit Report"].map((action) => (
               <button
                 key={action}
-                className="p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+                className="p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors text-center"
               >
-                <p className="font-medium">{action}</p>
+                <p className="font-medium text-sm md:text-base">{action}</p>
               </button>
             ))}
           </div>

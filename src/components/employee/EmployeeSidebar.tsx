@@ -34,10 +34,14 @@ export default function EmployeeSidebar({ activePage, onPageChange }: EmployeeSi
   };
 
   return (
-    <aside className="w-64 bg-secondary/30 border-r border-border p-6 flex flex-col">
-      <div className="mb-8">
+    <aside className="w-full h-full bg-secondary/30 border-r border-border p-6 flex flex-col">
+      <div className="mb-8 hidden md:block">
         <h2 className="text-xl font-bold text-primary">Employee Portal</h2>
         <p className="text-sm text-muted-foreground">Navigate your workspace</p>
+      </div>
+
+      <div className="mb-6 md:hidden">
+        <h2 className="text-xl font-bold text-primary">Menu</h2>
       </div>
 
       <nav className="flex-1 space-y-2">

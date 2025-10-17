@@ -49,9 +49,9 @@ export default function Chatbot() {
     <>
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-card border border-border rounded-lg shadow-2xl flex flex-col z-50 animate-scale-in">
+        <div className="fixed bottom-20 md:bottom-24 right-4 md:right-6 w-[calc(100vw-2rem)] md:w-96 h-[70vh] md:h-[500px] bg-card border border-border rounded-lg shadow-2xl flex flex-col z-50 animate-scale-in">
           {/* Header */}
-          <div className="p-4 border-b border-border flex items-center justify-between bg-primary text-primary-foreground rounded-t-lg">
+          <div className="p-3 md:p-4 border-b border-border flex items-center justify-between bg-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               <h3 className="font-semibold">AI Assistant</h3>
@@ -107,9 +107,9 @@ export default function Chatbot() {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform z-40 flex items-center justify-center"
+        className="fixed bottom-4 md:bottom-6 right-4 md:right-6 w-12 h-12 md:w-14 md:h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-110 transition-transform z-40 flex items-center justify-center"
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {isOpen ? <X className="w-5 h-5 md:w-6 md:h-6" /> : <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />}
       </button>
     </>
   );
