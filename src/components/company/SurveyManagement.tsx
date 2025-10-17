@@ -349,7 +349,9 @@ export default function SurveyManagement() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
                           <div className="flex flex-col items-center">
                             <span className="text-xs text-muted-foreground">Week</span>
-                            <span className="text-sm font-bold">{kpi.week_number}</span>
+                            <span className="text-sm font-bold">
+                              {kpi.week_number ?? "-"}
+                            </span>
                           </div>
                         </div>
                         <div className="flex-1">
