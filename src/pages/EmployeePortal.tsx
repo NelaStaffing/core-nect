@@ -6,6 +6,7 @@ import EmployeeFeedback from "@/components/employee/EmployeeFeedback";
 import EmployeeRequests from "@/components/employee/EmployeeRequests";
 import EmployeeAchievements from "@/components/employee/EmployeeAchievements";
 import EmployeeRewards from "@/components/employee/EmployeeRewards";
+import SurveyTaker from "@/components/employee/SurveyTaker";
 import Chatbot from "@/components/employee/Chatbot";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
@@ -46,12 +47,13 @@ export default function EmployeePortal() {
 
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
-        {activePage === "home" && <EmployeeHome />}
+        {activePage === "home" && <EmployeeHome onNavigate={setActivePage} />}
         {activePage === "surveys" && <EmployeeSurveys />}
         {activePage === "feedback" && <EmployeeFeedback />}
         {activePage === "requests" && <EmployeeRequests />}
         {activePage === "achievements" && <EmployeeAchievements />}
         {activePage === "rewards" && <EmployeeRewards />}
+        {activePage === "survey-take" && <SurveyTaker onBack={() => setActivePage("home")} />}
       </main>
 
       {/* Chatbot */}

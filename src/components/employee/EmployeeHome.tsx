@@ -1,9 +1,15 @@
 import GamificationCard from "./GamificationCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Target, TrendingUp, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Target, TrendingUp, Star, AlertCircle, Clock } from "lucide-react";
 
-export default function EmployeeHome() {
+interface EmployeeHomeProps {
+  onNavigate?: (page: string) => void;
+}
+
+export default function EmployeeHome({ onNavigate }: EmployeeHomeProps) {
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Header */}
@@ -13,6 +19,40 @@ export default function EmployeeHome() {
           Here's your progress and achievements
         </p>
       </div>
+
+      {/* Pending Surveys */}
+      <Card className="border-orange-500/20 bg-orange-500/5">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-500" />
+                Pending Survey
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Your weekly pulse check-in is ready
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="bg-orange-500/10 text-orange-500">
+              60 seconds
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>5 questions</span>
+              </div>
+              <span>Due: Today</span>
+            </div>
+            <Button onClick={() => onNavigate?.("survey-take")}>
+              Fill Out Survey
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Gamification Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
