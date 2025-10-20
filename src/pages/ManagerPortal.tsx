@@ -11,28 +11,24 @@ import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
 
 export default function ManagerPortal() {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("employees");
 
   const renderContent = () => {
     switch (activeSection) {
-      case "dashboard":
-        return <CompanyDashboard />;
       case "employees":
         return <EmployeeManagement />;
       case "kpi-surveys":
-        return <EmployeeKPISurvey onBack={() => setActiveSection("dashboard")} />;
-      case "resources":
-        return <ResourcesManagement />;
-      case "engagement":
-        return <RemoteEngagement />;
+        return <EmployeeKPISurvey onBack={() => setActiveSection("employees")} />;
       case "requests":
         return <RequestsManagement />;
-      case "surveys":
-        return <SurveyManagement />;
       case "metrics":
         return <CompanyMetrics />;
+      case "engagement":
+        return <RemoteEngagement />;
+      case "surveys":
+        return <SurveyManagement />;
       default:
-        return <CompanyDashboard />;
+        return <EmployeeManagement />;
     }
   };
 

@@ -1,4 +1,4 @@
-import { Users, FileText, BarChart3, LayoutDashboard, Activity, Heart, ClipboardCheck, Target } from "lucide-react";
+import { Users, FileText, BarChart3, Heart, ClipboardCheck, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ManagerSidebarProps {
@@ -7,14 +7,12 @@ interface ManagerSidebarProps {
 }
 
 const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "employees", label: "Team Members", icon: Users },
-  { id: "kpi-surveys", label: "Team KPI", icon: Target },
-  { id: "resources", label: "Resources", icon: Activity },
+  { id: "employees", label: "My Team", icon: Users },
+  { id: "kpi-surveys", label: "Employee KPI", icon: Target },
+  { id: "requests", label: "Requests", icon: ClipboardCheck },
+  { id: "metrics", label: "Metrics", icon: BarChart3 },
   { id: "engagement", label: "Engagement", icon: Heart },
-  { id: "requests", label: "Team Requests", icon: ClipboardCheck },
   { id: "surveys", label: "Surveys", icon: FileText },
-  { id: "metrics", label: "Team Metrics", icon: BarChart3 },
 ];
 
 export default function ManagerSidebar({ activeSection, onSectionChange }: ManagerSidebarProps) {
