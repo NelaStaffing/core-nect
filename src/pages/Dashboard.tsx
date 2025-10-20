@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import AppCard from "@/components/AppCard";
-import { UserCheck, Building2, Users, Loader2 } from "lucide-react";
+import { UserCheck, Building2, Users, Shield, UserCog, Loader2 } from "lucide-react";
 import { getUserProfile, getUserRoles, UserProfile, UserRole } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,12 +34,28 @@ const microApps: MicroApp[] = [
     roles: ["employee", "admin"],
   },
   {
+    id: "manager",
+    title: "Manager Portal",
+    description: "Manage your team, review requests, and track team performance.",
+    icon: UserCog,
+    url: "https://your-manager-app-url.com",
+    roles: ["manager", "admin"],
+  },
+  {
     id: "company",
     title: "Company Management",
     description: "Manage company settings, teams, and organizational structure.",
     icon: Building2,
     url: "https://your-company-app-url.com",
     roles: ["company", "admin"],
+  },
+  {
+    id: "admin",
+    title: "Super Admin",
+    description: "Full system access and administration capabilities.",
+    icon: Shield,
+    url: "https://your-admin-app-url.com",
+    roles: ["admin"],
   },
 ];
 
@@ -90,8 +106,12 @@ export default function Dashboard() {
   const handleAppClick = (app: MicroApp) => {
     if (app.id === "employee") {
       navigate("/employee");
+    } else if (app.id === "manager") {
+      navigate("/manager");
     } else if (app.id === "company") {
       navigate("/company");
+    } else if (app.id === "admin") {
+      navigate("/admin");
     } else {
       toast({
         title: `Opening ${app.title}`,

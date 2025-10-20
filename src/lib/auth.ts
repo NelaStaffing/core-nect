@@ -7,7 +7,7 @@ export interface UserProfile {
   email: string | null;
 }
 
-export type UserRole = 'employee' | 'company' | 'admin';
+export type UserRole = 'employee' | 'manager' | 'company' | 'admin';
 
 export const signUp = async (
   email: string,
