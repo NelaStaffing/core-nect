@@ -4,6 +4,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import EmployeeManagement from "@/components/company/EmployeeManagement";
 import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
+import CreateUserForm from "@/components/admin/CreateUserForm";
 import { Card } from "@/components/ui/card";
 
 export default function AdminPortal() {
@@ -14,12 +15,7 @@ export default function AdminPortal() {
       case "users":
         return <EmployeeManagement />;
       case "create-user":
-        return (
-          <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Create User / Manager / Company</h2>
-            <p className="text-muted-foreground">Create and manage user accounts with different roles.</p>
-          </Card>
-        );
+        return <CreateUserForm />;
       case "companies":
         return (
           <Card className="p-6">
