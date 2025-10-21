@@ -1,52 +1,52 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import CompanyDashboard from "@/components/company/CompanyDashboard";
 import EmployeeManagement from "@/components/company/EmployeeManagement";
-import EmployeeKPISurvey from "@/components/company/EmployeeKPISurvey";
-import ResourcesManagement from "@/components/company/ResourcesManagement";
-import StaffingManagement from "@/components/company/StaffingManagement";
-import RemoteEngagement from "@/components/company/RemoteEngagement";
-import RequestsManagement from "@/components/company/RequestsManagement";
-import RewardsManagement from "@/components/company/RewardsManagement";
 import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
 import { Card } from "@/components/ui/card";
 
 export default function AdminPortal() {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("users");
 
   const renderContent = () => {
     switch (activeSection) {
-      case "dashboard":
-        return <CompanyDashboard />;
-      case "employees":
+      case "users":
         return <EmployeeManagement />;
-      case "kpi-surveys":
-        return <EmployeeKPISurvey onBack={() => setActiveSection("dashboard")} />;
-      case "resources":
-        return <ResourcesManagement />;
-      case "staffing":
-        return <StaffingManagement />;
-      case "engagement":
-        return <RemoteEngagement />;
-      case "requests":
-        return <RequestsManagement />;
-      case "rewards":
-        return <RewardsManagement />;
+      case "create-user":
+        return (
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Create User / Manager / Company</h2>
+            <p className="text-muted-foreground">Create and manage user accounts with different roles.</p>
+          </Card>
+        );
+      case "companies":
+        return (
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Company List</h2>
+            <p className="text-muted-foreground">View and manage all registered companies.</p>
+          </Card>
+        );
       case "surveys":
         return <SurveyManagement />;
       case "metrics":
         return <CompanyMetrics />;
+      case "kpi-cycles":
+        return (
+          <Card className="p-6">
+            <h2 className="text-2xl font-bold mb-4">KPI and Cycles</h2>
+            <p className="text-muted-foreground">Manage KPI tracking cycles and quarterly timelines.</p>
+          </Card>
+        );
       case "system":
         return (
           <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">System Settings</h2>
+            <h2 className="text-2xl font-bold mb-4">Settings</h2>
             <p className="text-muted-foreground">System-wide configuration and administration tools.</p>
           </Card>
         );
       default:
-        return <CompanyDashboard />;
+        return <EmployeeManagement />;
     }
   };
 

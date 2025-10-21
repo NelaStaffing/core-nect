@@ -1,4 +1,4 @@
-import { Users, FileText, BarChart3, LayoutDashboard, Activity, UserCog, Heart, ClipboardCheck, Gift, Target, Settings } from "lucide-react";
+import { Users, FileText, BarChart3, Building2, UserPlus, Target, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AdminSidebarProps {
@@ -7,17 +7,13 @@ interface AdminSidebarProps {
 }
 
 const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "employees", label: "All Employees", icon: Users },
-  { id: "kpi-surveys", label: "Employee KPI", icon: Target },
-  { id: "resources", label: "Resources", icon: Activity },
-  { id: "staffing", label: "Staffing", icon: UserCog },
-  { id: "engagement", label: "Engagement", icon: Heart },
-  { id: "requests", label: "All Requests", icon: ClipboardCheck },
-  { id: "rewards", label: "Rewards", icon: Gift },
-  { id: "surveys", label: "Surveys", icon: FileText },
+  { id: "users", label: "Users List", icon: Users },
+  { id: "create-user", label: "Create User", icon: UserPlus },
+  { id: "companies", label: "Company List", icon: Building2 },
+  { id: "surveys", label: "Surveys Setup", icon: FileText },
   { id: "metrics", label: "Metrics", icon: BarChart3 },
-  { id: "system", label: "System Settings", icon: Settings },
+  { id: "kpi-cycles", label: "KPI and Cycles", icon: Target },
+  { id: "system", label: "Settings", icon: Settings },
 ];
 
 export default function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarProps) {
