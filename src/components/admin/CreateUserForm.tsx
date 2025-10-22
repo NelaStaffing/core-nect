@@ -39,6 +39,9 @@ interface FormData {
   password: string;
   companyId: string;
   companyName?: string;
+  contractType?: string;
+  dateStarted?: string;
+  jobTitle?: string;
 }
 
 export default function CreateUserForm() {
@@ -51,6 +54,9 @@ export default function CreateUserForm() {
     password: '',
     companyId: '',
     companyName: '',
+    contractType: '',
+    dateStarted: '',
+    jobTitle: '',
   });
 
   const handleRoleSelect = (role: RoleOption) => {
@@ -71,7 +77,7 @@ export default function CreateUserForm() {
     if (step === 2) {
       const baseFields = formData.firstName && formData.lastName && formData.email && formData.password;
       if (formData.role === 'employee' || formData.role === 'manager') {
-        return baseFields && formData.companyId;
+        return baseFields && formData.companyId && formData.contractType && formData.dateStarted && formData.jobTitle;
       }
       if (formData.role === 'company') {
         return baseFields && formData.companyName;
@@ -183,19 +189,61 @@ export default function CreateUserForm() {
 
           {/* Company Selection for Employee and Manager */}
           {(formData.role === 'employee' || formData.role === 'manager') && (
-            <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Select value={formData.companyId} onValueChange={(value) => handleInputChange('companyId', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a company" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="company-1">Acme Corporation</SelectItem>
-                  <SelectItem value="company-2">Tech Innovations Inc</SelectItem>
-                  <SelectItem value="company-3">Global Solutions Ltd</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="company">Company</Label>
+                <Select value={formData.companyId} onValueChange={(value) => handleInputChange('companyId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a company" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="company-1">Acme Corporation</SelectItem>
+                    <SelectItem value="company-2">Tech Innovations Inc</SelectItem>
+                    <SelectItem value="company-3">Global Solutions Ltd</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Additional fields shown when company is selected */}
+              {formData.companyId && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="contractType">Contract Type</Label>
+                    <Select value={formData.contractType} onValueChange={(value) => handleInputChange('contractType', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select contract type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="contractor">Contractor</SelectItem>
+                        <SelectItem value="full-time">Full Time</SelectItem>
+                        <SelectItem value="part-time">Part Time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="dateStarted">Date Started</Label>
+                      <Input
+                        id="dateStarted"
+                        type="date"
+                        value={formData.dateStarted}
+                        onChange={(e) => handleInputChange('dateStarted', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="jobTitle">Job Title</Label>
+                      <Input
+                        id="jobTitle"
+                        value={formData.jobTitle}
+                        onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                        placeholder="Software Engineer"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           {/* Company Name for Company Role */}
