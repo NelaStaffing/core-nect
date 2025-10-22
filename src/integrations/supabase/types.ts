@@ -58,6 +58,33 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          id: string
+          name: string
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          id?: string
+          name: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          id?: string
+          name?: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_metrics: {
         Row: {
           company_id: string
@@ -126,6 +153,54 @@ export type Database = {
           uploaded_by?: string
         }
         Relationships: []
+      }
+      employee_companies: {
+        Row: {
+          company_id: string
+          contract_type: string
+          created_at: string
+          date_started: string
+          employee_id: string
+          id: string
+          job_title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          contract_type: string
+          created_at?: string
+          date_started: string
+          employee_id: string
+          id?: string
+          job_title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          contract_type?: string
+          created_at?: string
+          date_started?: string
+          employee_id?: string
+          id?: string
+          job_title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_companies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_companies_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employee_kpi_surveys: {
         Row: {
@@ -263,6 +338,52 @@ export type Database = {
           year?: number | null
         }
         Relationships: []
+      }
+      manager_employees: {
+        Row: {
+          company_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          manager_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          manager_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          manager_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manager_employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manager_employees_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manager_employees_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -587,10 +708,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_current_quarter_week: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      get_current_quarter_week: { Args: never; Returns: number }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
