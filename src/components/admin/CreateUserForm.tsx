@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserRole } from "@/lib/auth";
 import { UserCircle, Briefcase, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type RoleOption = Exclude<UserRole, 'admin'>;
 
@@ -46,6 +48,9 @@ interface FormData {
 
 export default function CreateUserForm() {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     role: null,
     firstName: '',
@@ -59,6 +64,19 @@ export default function CreateUserForm() {
     jobTitle: '',
   });
 
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  const fetchCompanies = async () => {
+    const { data } = await supabase
+      .from('companies')
+      .select('id, name')
+      .order('name');
+    
+    if (data) setCompanies(data);
+  };
+
   const handleRoleSelect = (role: RoleOption) => {
     setFormData({ ...formData, role });
     setStep(2);
@@ -69,8 +87,89 @@ export default function CreateUserForm() {
   };
 
   const handleSubmit = async () => {
-    // TODO: Implement user creation
-    console.log('Creating user:', formData);
+    if (!formData.role) return;
+    
+    setLoading(true);
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('User creation failed');
+
+      const userId = authData.user.id;
+
+      // Add role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: formData.role });
+
+      if (roleError) throw roleError;
+
+      // Handle company role - create company
+      if (formData.role === 'company' && formData.companyName) {
+        const { error: companyError } = await supabase
+          .from('companies')
+          .insert({ 
+            id: userId,
+            name: formData.companyName 
+          });
+
+        if (companyError) throw companyError;
+      }
+
+      // Handle employee/manager role - create employee_companies record
+      if ((formData.role === 'employee' || formData.role === 'manager') && formData.companyId) {
+        const { error: empError } = await supabase
+          .from('employee_companies')
+          .insert({
+            employee_id: userId,
+            company_id: formData.companyId,
+            job_title: formData.jobTitle || '',
+            contract_type: formData.contractType || '',
+            date_started: formData.dateStarted || new Date().toISOString().split('T')[0],
+          });
+
+        if (empError) throw empError;
+      }
+
+      toast({
+        title: 'Success',
+        description: `${formData.role.charAt(0).toUpperCase() + formData.role.slice(1)} created successfully`,
+      });
+
+      // Reset form
+      setFormData({
+        role: null,
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        companyId: '',
+        companyName: '',
+        contractType: '',
+        dateStarted: '',
+        jobTitle: '',
+      });
+      setStep(1);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const canProceed = () => {
@@ -197,9 +296,15 @@ export default function CreateUserForm() {
                     <SelectValue placeholder="Select a company" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="company-1">Acme Corporation</SelectItem>
-                    <SelectItem value="company-2">Tech Innovations Inc</SelectItem>
-                    <SelectItem value="company-3">Global Solutions Ltd</SelectItem>
+                    {companies.length === 0 ? (
+                      <SelectItem value="none" disabled>No companies available</SelectItem>
+                    ) : (
+                      companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -270,10 +375,10 @@ export default function CreateUserForm() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!canProceed()}
+              disabled={!canProceed() || loading}
               className="flex-1 flex items-center justify-center gap-2"
             >
-              Create User
+              {loading ? 'Creating...' : 'Create User'}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
