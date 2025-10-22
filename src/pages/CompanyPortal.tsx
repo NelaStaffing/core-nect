@@ -2,15 +2,12 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import CompanySidebar from "@/components/company/CompanySidebar";
 import CompanyDashboard from "@/components/company/CompanyDashboard";
-import EmployeeManagement from "@/components/company/EmployeeManagement";
-import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
 import ResourcesManagement from "@/components/company/ResourcesManagement";
 import StaffingManagement from "@/components/company/StaffingManagement";
 import RemoteEngagement from "@/components/company/RemoteEngagement";
 import RequestsManagement from "@/components/company/RequestsManagement";
 import RewardsManagement from "@/components/company/RewardsManagement";
-import EmployeeKPISurvey from "@/components/company/EmployeeKPISurvey";
 import CompanyAssistantWidget from "@/components/company/CompanyAssistantWidget";
 
 export default function CompanyPortal() {
@@ -20,8 +17,6 @@ export default function CompanyPortal() {
     switch (activeSection) {
       case "dashboard":
         return <CompanyDashboard onNavigate={setActiveSection} />;
-      case "employees":
-        return <EmployeeManagement />;
       case "resources":
         return <ResourcesManagement />;
       case "staffing":
@@ -32,12 +27,8 @@ export default function CompanyPortal() {
         return <RequestsManagement />;
       case "rewards":
         return <RewardsManagement />;
-      case "surveys":
-        return <SurveyManagement />;
       case "metrics":
         return <CompanyMetrics />;
-      case "kpi-surveys":
-        return <EmployeeKPISurvey onBack={() => setActiveSection("dashboard")} />;
       default:
         return <CompanyDashboard onNavigate={setActiveSection} />;
     }
