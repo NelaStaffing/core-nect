@@ -114,41 +114,33 @@ export default function CreateUserForm() {
       const userId = authData.user.id;
       console.log('User created with ID:', userId);
 
-      // Add role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: userId, role: formData.role });
+      // Add role using RPC function
+      const { error: roleError } = await supabase.rpc('admin_assign_role', {
+        _target_user: userId,
+        _role: formData.role
+      });
 
       if (roleError) throw roleError;
 
-      // Handle company role - create company
+      // Handle company role - create company via RPC
       if (formData.role === 'company' && formData.companyName) {
-        console.log('Creating company:', { id: userId, name: formData.companyName });
-        const { error: companyError } = await supabase
-          .from('companies')
-          .insert({ 
-            id: userId,
-            name: formData.companyName 
-          });
+        const { error: companyError } = await supabase.rpc('create_company_for_user', {
+          _user_id: userId,
+          _company_name: formData.companyName
+        });
 
-        if (companyError) {
-          console.error('Company creation error:', companyError);
-          throw companyError;
-        }
-        console.log('Company created successfully');
+        if (companyError) throw companyError;
       }
 
-      // Handle employee/manager role - create employee_companies record
+      // Handle employee/manager role - assign to company via RPC
       if ((formData.role === 'employee' || formData.role === 'manager') && formData.companyId) {
-        const { error: empError } = await supabase
-          .from('employee_companies')
-          .insert({
-            employee_id: userId,
-            company_id: formData.companyId,
-            job_title: formData.jobTitle || '',
-            contract_type: formData.contractType || '',
-            date_started: formData.dateStarted || new Date().toISOString().split('T')[0],
-          });
+        const { error: empError } = await supabase.rpc('assign_employee_to_company', {
+          _employee_id: userId,
+          _company_id: formData.companyId,
+          _job_title: formData.jobTitle || '',
+          _contract_type: formData.contractType || '',
+          _date_started: formData.dateStarted || new Date().toISOString().split('T')[0]
+        });
 
         if (empError) throw empError;
       }

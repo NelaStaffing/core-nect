@@ -708,6 +708,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_assign_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _target_user: string
+        }
+        Returns: boolean
+      }
+      assign_employee_to_company: {
+        Args: {
+          _company_id: string
+          _contract_type: string
+          _date_started: string
+          _employee_id: string
+          _job_title: string
+        }
+        Returns: string
+      }
+      create_company_for_user: {
+        Args: { _company_name: string; _user_id: string }
+        Returns: string
+      }
       get_current_quarter_week: { Args: never; Returns: number }
       get_user_roles: {
         Args: { _user_id: string }
