@@ -89,6 +89,7 @@ export default function CreateUserForm() {
   const handleSubmit = async () => {
     if (!formData.role) return;
     
+    console.log('Creating user with data:', formData);
     setLoading(true);
     try {
       // Create auth user
@@ -103,10 +104,14 @@ export default function CreateUserForm() {
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
       if (!authData.user) throw new Error('User creation failed');
 
       const userId = authData.user.id;
+      console.log('User created with ID:', userId);
 
       // Add role
       const { error: roleError } = await supabase
@@ -117,6 +122,7 @@ export default function CreateUserForm() {
 
       // Handle company role - create company
       if (formData.role === 'company' && formData.companyName) {
+        console.log('Creating company:', { id: userId, name: formData.companyName });
         const { error: companyError } = await supabase
           .from('companies')
           .insert({ 
@@ -124,7 +130,11 @@ export default function CreateUserForm() {
             name: formData.companyName 
           });
 
-        if (companyError) throw companyError;
+        if (companyError) {
+          console.error('Company creation error:', companyError);
+          throw companyError;
+        }
+        console.log('Company created successfully');
       }
 
       // Handle employee/manager role - create employee_companies record
@@ -162,9 +172,10 @@ export default function CreateUserForm() {
       });
       setStep(1);
     } catch (error: any) {
+      console.error('Full error:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || 'Failed to create user',
         variant: 'destructive',
       });
     } finally {
