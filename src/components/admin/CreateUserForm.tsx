@@ -89,14 +89,15 @@ export default function CreateUserForm() {
   const handleSubmit = async () => {
     if (!formData.role) return;
     
-    console.log('Creating user with data:', formData);
     setLoading(true);
     try {
       // Create auth user
+      const redirectUrl = `${window.location.origin}/`;
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
@@ -184,17 +185,23 @@ export default function CreateUserForm() {
   };
 
   const canProceed = () => {
-    if (step === 2) {
-      const baseFields = formData.firstName && formData.lastName && formData.email && formData.password;
-      if (formData.role === 'employee' || formData.role === 'manager') {
-        return baseFields && formData.companyId && formData.contractType && formData.dateStarted && formData.jobTitle;
-      }
-      if (formData.role === 'company') {
-        return baseFields && formData.companyName;
-      }
-      return baseFields;
+    if (step !== 2) return false;
+    const nonEmpty = (v?: string | null) => !!v && v.trim().length > 0;
+
+    const baseOk = [formData.firstName, formData.lastName, formData.email, formData.password]
+      .every(nonEmpty);
+
+    if (!baseOk) return false;
+
+    if (formData.role === 'company') {
+      return nonEmpty(formData.companyName);
     }
-    return false;
+
+    if (formData.role === 'employee' || formData.role === 'manager') {
+      return nonEmpty(formData.companyId) && nonEmpty(formData.contractType) && nonEmpty(formData.dateStarted) && nonEmpty(formData.jobTitle);
+    }
+
+    return baseOk;
   };
 
   return (
