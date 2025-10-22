@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,18 +6,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plug } from "lucide-react";
 
 export default function Settings() {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
+  const [accountName, setAccountName] = useState("");
+  const [email, setEmail] = useState("");
 
-  const handleSave = () => {
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        setEmail(user.email || "");
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+          setAccountName(fullName || 'User');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    // TODO: Save notification preferences to database
     toast({
       title: "Settings saved",
-      description: "Your settings have been updated successfully.",
+      description: "Your notification preferences have been updated successfully.",
     });
   };
 
@@ -34,111 +68,91 @@ export default function Settings() {
             </p>
           </div>
 
-          <Tabs defaultValue="account" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="account">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account Information</CardTitle>
-                  <CardDescription>
-                    Update your personal information and email address
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-6">
+            {/* Account Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Information</CardTitle>
+                <CardDescription>
+                  Your account details and email address
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loading ? (
+                  <>
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="John" />
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-10 w-full" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Doe" />
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-10 w-full" />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="john.doe@example.com" />
-                  </div>
-                  <Separator />
-                  <Button onClick={handleSave}>Save Changes</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Account Name</Label>
+                      <Input value={accountName} disabled className="bg-muted" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email Address</Label>
+                      <Input value={email} disabled className="bg-muted" />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-            <TabsContent value="notifications">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>
-                    Choose how you want to be notified
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="email-notifications">Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive email notifications about important updates
-                      </p>
-                    </div>
-                    <Switch
-                      id="email-notifications"
-                      checked={emailNotifications}
-                      onCheckedChange={setEmailNotifications}
-                    />
+            {/* Email Notifications */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Email Notifications</CardTitle>
+                <CardDescription>
+                  Manage your email notification preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="email-notifications">Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receive email notifications about important updates, surveys, and rewards
+                    </p>
                   </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="push-notifications">Push Notifications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Receive push notifications in your browser
-                      </p>
-                    </div>
-                    <Switch
-                      id="push-notifications"
-                      checked={pushNotifications}
-                      onCheckedChange={setPushNotifications}
-                    />
-                  </div>
-                  <Separator />
-                  <Button onClick={handleSave}>Save Preferences</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                  <Switch
+                    id="email-notifications"
+                    checked={emailNotifications}
+                    onCheckedChange={setEmailNotifications}
+                  />
+                </div>
+                <Separator />
+                <Button onClick={handleSaveNotifications}>Save Preferences</Button>
+              </CardContent>
+            </Card>
 
-            <TabsContent value="security">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Security Settings</CardTitle>
-                  <CardDescription>
-                    Manage your password and security preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
-                    <Input id="current-password" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
-                    <Input id="new-password" type="password" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
-                    <Input id="confirm-password" type="password" />
-                  </div>
-                  <Separator />
-                  <Button onClick={handleSave}>Update Password</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            {/* Integrations Placeholder */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plug className="h-5 w-5" />
+                  Integrations
+                </CardTitle>
+                <CardDescription>
+                  Connect your account with third-party services
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-muted-foreground">
+                  <Plug className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium mb-2">Coming Soon</p>
+                  <p className="text-sm">
+                    Integration options will be available here in future updates
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
