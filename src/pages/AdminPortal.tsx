@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import EmployeeManagement from "@/components/company/EmployeeManagement";
+import ManagerList from "@/components/admin/ManagerList";
 import SurveyManagement from "@/components/company/SurveyManagement";
 import CompanyMetrics from "@/components/company/CompanyMetrics";
 import CreateUserForm from "@/components/admin/CreateUserForm";
@@ -17,6 +18,8 @@ export default function AdminPortal() {
         return <EmployeeManagement />;
       case "create-user":
         return <CreateUserForm />;
+      case "managers":
+        return <ManagerList />;
       case "companies":
         return (
           <Card className="p-6">

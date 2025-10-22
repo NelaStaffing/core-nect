@@ -1,4 +1,4 @@
-import { Users, FileText, BarChart3, Building2, UserPlus, Target, Settings } from "lucide-react";
+import { Users, FileText, BarChart3, Building2, UserPlus, Target, Settings, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AdminSidebarProps {
@@ -9,6 +9,7 @@ interface AdminSidebarProps {
 const menuItems = [
   { id: "users", label: "Users List", icon: Users },
   { id: "create-user", label: "Create User", icon: UserPlus },
+  { id: "managers", label: "Manager List", icon: UserCog },
   { id: "companies", label: "Company List", icon: Building2 },
   { id: "surveys", label: "Surveys Setup", icon: FileText },
   { id: "metrics", label: "Metrics", icon: BarChart3 },
